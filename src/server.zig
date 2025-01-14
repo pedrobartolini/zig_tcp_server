@@ -163,6 +163,10 @@ pub fn poll_clients() void {
     }
 }
 
+var chann = channel.Channel(ServerMessage, 1024).init();
+var tx = chann.tx();
+pub var rx = chann.rx();
+
 pub const ServerMessage = struct {
     client: Client,
 
@@ -203,7 +207,3 @@ pub const ServerMessage = struct {
         _ = try writer.writeAll(" }");
     }
 };
-
-var chann = channel.Channel(ServerMessage, 1024).init();
-var tx = chann.tx();
-pub var rx = chann.rx();
