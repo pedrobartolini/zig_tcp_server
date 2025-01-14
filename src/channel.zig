@@ -27,14 +27,14 @@ pub fn Channel(comptime T: type, comptime size: usize) type {
         pub const Rx = struct {
             chann: *Channel(T, size),
 
-            pub fn try_receive(self: *Rx) !T {
+            pub fn receive(self: *Rx) T {
                 const channel = self.chann;
 
                 channel.mutex.lock();
                 defer channel.mutex.unlock();
 
                 if (channel.count == 0) {
-                    return error.ChannelEmpty;
+                    channel.signal.wait(&channel.mutex);
                 }
 
                 const value = channel.queue[channel.head];
@@ -46,14 +46,14 @@ pub fn Channel(comptime T: type, comptime size: usize) type {
                 return value;
             }
 
-            pub fn receive(self: *Rx) T {
+            pub fn try_receive(self: *Rx) !T {
                 const channel = self.chann;
 
                 channel.mutex.lock();
                 defer channel.mutex.unlock();
 
                 if (channel.count == 0) {
-                    channel.signal.wait(&channel.mutex);
+                    return error.ChannelEmpty;
                 }
 
                 const value = channel.queue[channel.head];
