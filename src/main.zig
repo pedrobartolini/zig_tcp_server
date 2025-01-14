@@ -14,7 +14,20 @@ pub fn main() !void {
     try server.wsa_init();
     defer server.wsa_cleanup();
 
-    try thing_server.init(1234, 1000);
+    try thing_server.init(6969, 10000);
 
-    thing_server.start_accepting();
+    _ = try std.Thread.spawn(.{}, server.Server.start_accepting, .{&thing_server});
+    _ = try std.Thread.spawn(.{}, server.poll_clients, .{});
+
+    var count: u64 = 1;
+
+    while (true) {
+        const message = server.rx.receive();
+
+        std.log.debug("{}", .{message});
+        std.log.debug("received messages = {}", .{count});
+        count += 1;
+
+        // std.time.sleep(100 * 1000000);
+    }
 }
